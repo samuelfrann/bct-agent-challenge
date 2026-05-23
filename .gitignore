@@ -28,4 +28,4 @@ data/
 
 # Ignore the encrypted files
 *.zip
-*.tar
+*.tarworkflow/*.png
