@@ -90,10 +90,47 @@ NIGERIAN_CITIES = ["Lagos", "Abuja", "Port Harcourt", "Ibadan", "Kano", "Benin C
 def detect_location_scope(intent: str, description: str = ""):
     text = f"{intent} {description}".lower()
 
+    # Specific Lagos areas
     lagos_terms = ["lagos", "lekki", "vi ", "victoria island", "ikeja", "yaba",
                    "surulere", "ikoyi", "ajah", "mainland", "ajegunle", "ojuelegba"]
     if any(t in text for t in lagos_terms):
         return "Lagos"
+
+    # Specific other Nigerian cities
+    ng_cities = {
+        "abuja": "Abuja", "wuse": "Abuja", "maitama": "Abuja", "garki": "Abuja",
+        "port harcourt": "Port Harcourt", " ph ": "Port Harcourt",
+        "ibadan": "Ibadan", "kano": "Kano",
+        "benin": "Benin City", "kaduna": "Kaduna"
+    }
+    for kw, c in ng_cities.items():
+        if kw in text:
+            return c
+
+    # Nigeria-wide explicit
+    if any(t in text for t in ["nigeria", "nigerian", "naija", "9ja"]):
+        return NIGERIAN_CITIES
+
+    # Specific foreign cities (will return empty if no data — LLM handles)
+    foreign_map = {
+        "delhi": "Delhi", "mumbai": "Mumbai", "bangalore": "Bangalore",
+        "india": "Delhi",
+        "london": "London", "uk": "London", "england": "London",
+        "new york": "New York", "nyc": "New York",
+        "paris": "Paris", "france": "Paris",
+        "tokyo": "Tokyo", "japan": "Tokyo",
+        "dubai": "Dubai", "uae": "Dubai",
+        "accra": "Accra", "ghana": "Accra",
+        "johannesburg": "Johannesburg", "south africa": "Johannesburg",
+        "nairobi": "Nairobi", "kenya": "Nairobi",
+        "toronto": "Toronto", "canada": "Toronto",
+    }
+    for kw, c in foreign_map.items():
+        if kw in text:
+            return c
+
+    # Default: all Nigerian cities (Lagos + others)
+    return NIGERIAN_CITIES
 
     other_cities = {
         "abuja": "Abuja", "wuse": "Abuja", "maitama": "Abuja", "garki": "Abuja",
