@@ -33,8 +33,8 @@ class RecommenderState(TypedDict):
 
 
 # ── LLM ───────────────────────────────────────────────────────────────────────
-llm = ChatAnthropic(model="claude-sonnet-4-6", max_tokens=2000)
-
+def recommend(request):
+    llm = ChatAnthropic(model="claude-sonnet-4-6", max_tokens=2000)
 
 # ── Node 1: Parse persona + detect cold start ─────────────────────────────────
 def parse_persona_node(state: RecommenderState) -> dict:
