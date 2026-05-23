@@ -32,6 +32,8 @@ print("Loading reviews...")
 user_reviews = defaultdict(list)
 with open(PROCESSED / "review_slice.json", encoding="utf-8") as f:
     for line in f:
+        if not line.strip():
+            continue
         r = json.loads(line)
         user_reviews[r["user_id"]].append(r)
 print(f"  {sum(len(v) for v in user_reviews.values())} reviews | {len(user_reviews)} users")
@@ -40,9 +42,10 @@ print("Loading businesses...")
 businesses = {}
 with open(PROCESSED / "business_slice.json", encoding="utf-8") as f:
     for line in f:
+        if not line.strip():
+            continue
         b = json.loads(line)
-        # Only keep open businesses with enough reviews to be meaningful
-        if b.get("is_open", 1) == 1 and int(b.get("review_count", 0)) >= 5:
+        if b.get("is_open", True) and int(b.get("review_count") or 0) >= 5:
             businesses[b["business_id"]] = b
 print(f"  {len(businesses)} Yelp businesses loaded")
 
@@ -50,8 +53,10 @@ naija_path = PROCESSED / "naija_slice.json"
 if naija_path.exists():
     with open(naija_path, encoding="utf-8") as f:
         for line in f:
+            if not line.strip():
+                continue
             b = json.loads(line)
-            if b.get("is_open", 1) == 1:
+            if b.get("is_open", True):
                 businesses[b["business_id"]] = b
     print(f"  Nigerian businesses injected ✅")
 
