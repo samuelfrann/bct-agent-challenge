@@ -117,7 +117,7 @@ def get_user_reviews(user_id: str, query: str = None, k: int = 5) -> list[dict]:
         ]
 
 # ── 4. Semantic business search ───────────────────────────────────────────────
-def search_businesses(query: str, k: int = 20, min_stars: float = 3.0) -> list[dict]:
+def search_businesses(query: str, k: int = 20, min_stars: float = 3.0, city: str = "Lagos") -> list[dict]:
     """
     Find businesses semantically similar to a query string.
     e.g. "spicy Nigerian food casual Lagos" → returns relevant businesses.
@@ -127,7 +127,12 @@ def search_businesses(query: str, k: int = 20, min_stars: float = 3.0) -> list[d
     results   = _business_col.query(
         query_embeddings=[embedding],
         n_results=k,
-        where={"stars": {"$gte": min_stars}},
+        where={
+            "$and": [
+                {"stars": {"$gte": min_stars}},
+                {"city": city}
+            ]
+        },
         include=["metadatas", "distances"]
     )
     return [

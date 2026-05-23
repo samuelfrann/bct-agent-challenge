@@ -83,14 +83,47 @@ def build_query_cold_start_node(state: RecommenderState) -> dict:
     }
 
 
+
+# ── Location scope detection ──────────────────────────────────────────────────
+NIGERIAN_CITIES = ["Lagos", "Abuja", "Port Harcourt", "Ibadan", "Kano", "Benin City", "Kaduna"]
+
+def detect_location_scope(intent: str, description: str = ""):
+    text = f"{intent} {description}".lower()
+
+    lagos_terms = ["lagos", "lekki", "vi ", "victoria island", "ikeja", "yaba",
+                   "surulere", "ikoyi", "ajah", "mainland", "ajegunle", "ojuelegba"]
+    if any(t in text for t in lagos_terms):
+        return "Lagos"
+
+    other_cities = {
+        "abuja": "Abuja", "wuse": "Abuja", "maitama": "Abuja", "garki": "Abuja",
+        "port harcourt": "Port Harcourt", " ph ": "Port Harcourt",
+        "ibadan": "Ibadan", "kano": "Kano",
+        "benin": "Benin City", "kaduna": "Kaduna"
+    }
+    for kw, c in other_cities.items():
+        if kw in text:
+            return c
+
+    if any(t in text for t in ["nigeria", "nigerian", "naija", "9ja"]):
+        return NIGERIAN_CITIES
+
+    return "Lagos"
+
+
 # ── Node 3: Search ChromaDB for candidates ────────────────────────────────────
 def search_businesses_node(state: RecommenderState) -> dict:
     print("🏪 Searching businesses...")
-    candidates = search_businesses(
+    intent      = state.get("raw_context", {}).get("intent", "")
+    description = state.get("persona", {}).get("description", "")
+    scope       = detect_location_scope(intent, description)
+    print(f"📍 Location scope: {scope}")
+    candidates  = search_businesses(
         query=state["search_query"],
-        k=state.get("k", 10) * 2   # fetch more, LLM will rank down to k
+        k=state.get("k", 10) * 2,
+        city=scope
     )
-    return {"candidate_businesses": candidates}
+    return {"candidate_businesses": candidates, "location_scope": scope}
 
 
 # ── Node 4: Rank and generate explanations ────────────────────────────────────
