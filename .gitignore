@@ -25,7 +25,6 @@ Thumbs.db
 
 # Ignore the massive datasets
 data/
-chroma_db/
 
 # Ignore the encrypted files
 *.zip

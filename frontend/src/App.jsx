@@ -15,14 +15,19 @@ function App() {
   const [resultB, setResultB] = useState(null);
 
   // --- HANDLERS ---
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
   const handleSimulateTaskA = async (e) => {
     e.preventDefault();
     setLoadingA(true);
     try {
-      const response = await fetch('http://localhost:3000/api/simulate', {
+      const response = await fetch(`${API_URL}/simulate-review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userContext: userContextA, businessContext: businessContextA }),
+        body: JSON.stringify({
+          user_persona: { description: userContextA },
+          item: { name: businessContextA, categories: "Restaurant", city: "Lagos" }
+        }),
       });
       const data = await response.json();
       setResultA(data); 
@@ -38,16 +43,20 @@ function App() {
     e.preventDefault();
     setLoadingB(true);
     try {
-      const response = await fetch('http://localhost:3000/api/recommend', {
+      const response = await fetch(`${API_URL}/recommend`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userContext: userContextB }),
+        body: JSON.stringify({
+          user_persona: { description: userContextB },
+          context: { intent: userContextB },
+          k: 5
+        }),
       });
       const data = await response.json();
       setResultB(data); 
     } catch (error) {
       console.error("Gateway error:", error);
-      alert("Error: Gateway server is offline. Did you run 'node server.js'?");
+      alert("Error: API server is offline.");
     } finally {
       setLoadingB(false);
     }
