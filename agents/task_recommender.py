@@ -163,8 +163,10 @@ Select the top {k} that best match this user. Explain each pick in a way
 that resonates with a Nigerian user — reference their taste, cultural context, 
 and what makes the place right for them.
 
-IMPORTANT: Always include the location (address or area) of each place in the 
-'reason' field, so the user knows where to find it physically.
+IMPORTANT: EVERY reason MUST start with a location indicator in this exact format:
+"📍 <City> — <Area>. " (e.g., "📍 Lagos — Victoria Island. " or "📍 Abuja — Wuse 2. ")
+After the location indicator, write the Nigerian-toned explanation.
+If you only know the city and not the area, just use "📍 <City>. "
 
 Respond ONLY in this JSON format:
 {{
@@ -176,7 +178,7 @@ Respond ONLY in this JSON format:
             "city": "<city>",
             "stars": <float>,
             "score": <float 0-1>,
-            "reason": "<Nigerian-toned explanation INCLUDING the address/area>"
+            "reason": "📍 <City> — <Area/Neighborhood>. <Nigerian-toned explanation>"
         }}
     ],
     "clarifying_questions": ["<only if cold start and more info would help>"]
