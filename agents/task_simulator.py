@@ -138,23 +138,36 @@ def generate_review_node(state: SimulatorState) -> dict:
 
     prompt = f"""You are simulating a review written by a specific user.
 
-USER BEHAVIORAL PROFILE:
-- Average rating: {persona['avg_rating']} stars
+USER'S ACTUAL EXPERIENCE AT THIS BUSINESS:
+"{description}"
+
+CRITICAL RATING RULE: The rating MUST reflect the sentiment of the experience.
+- Negative (complaints, dislike, bad food/service, won't return) → 1 or 2 stars
+- Mixed (some good, some bad) → 3 stars
+- Positive (enjoyment, praise, would return) → 4 or 5 stars
+The user's actual experience ALWAYS takes priority over their average rating tendency.
+
+VARIETY RULE: Do NOT start with "Solid spot", "Decent spot", "Great place" or any 
+generic restaurant template. Each review must sound distinct — begin with something 
+specific to THIS user's experience.
+
+CUISINE SPECIFICITY: If the place serves Nigerian/African food, reference specific 
+dishes (jollof, suya, eba, pepper soup, amala, efo riro, etc.) instead of saying 
+"well-seasoned food". For other cuisines, name the actual food type.
+
+USER WRITING STYLE (tone only, NOT for rating):
 - Writing style: {state['style_instructions']}
 - Frequently visits: {', '.join(persona.get('top_categories', [])[:3])}
+- Average rating tendency: {persona['avg_rating']} (style reference only)
 
 LANGUAGE TONE: {tone_instruction}
 
 LOCATION CONTEXT: {state['cultural_context']}
-IMPORTANT: This business is located in {city}. 
-Do not reference any other city. All location context must be specific to {city}.
+IMPORTANT: This business is in {city}. Do not reference any other city.
 
 CUISINE/CATEGORY: {item.get('categories', 'Restaurant')}
-Write your review referencing the actual type of food/service this place offers.
-Do not substitute with unrelated cuisine types.
 
 WRITING LENGTH: {state['style_instructions']}
-You MUST respect the review length stated above. If it says 30 words, write 30 words maximum.
 {examples}
 
 ITEM BEING REVIEWED:
@@ -164,9 +177,9 @@ City: {city}
 
 Respond ONLY in this JSON format:
 {{
-    "rating": <integer 1-5>,
-    "review_text": "<the simulated review>",
-    "reasoning_trace": "<why this rating and tone based on the profile>"
+    "rating": <integer 1-5, MUST match sentiment>,
+    "review_text": "<unique review reflecting actual experience and cuisine>",
+    "reasoning_trace": "<why this rating, tied to the experience>"
 }}"""
 
     response = llm.invoke([

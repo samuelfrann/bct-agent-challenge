@@ -33,7 +33,7 @@ class RecommenderState(TypedDict):
 
 
 # ── LLM ───────────────────────────────────────────────────────────────────────
-llm = ChatAnthropic(model="claude-sonnet-4-6", max_tokens=2000)
+llm = ChatAnthropic(model="claude-sonnet-4-6", max_tokens=3000)
 
 # ── Node 1: Parse persona + detect cold start ─────────────────────────────────
 def parse_persona_node(state: RecommenderState) -> dict:
@@ -102,9 +102,12 @@ def rank_and_reason_node(state: RecommenderState) -> dict:
     k          = state.get("k", 10)
 
     candidates_text = "\n".join([
-        f"{i+1}. {b['name']} | {b['categories']} | {b['city']} | {b['stars']}★"
+        f"{i+1}. {b['name']} | {b['categories']} | {b.get('address', 'N/A')} | {b['city']} | {b['stars']}★ | id:{b.get('business_id', '')}"
         for i, b in enumerate(candidates[:20])
     ])
+
+    intent_text    = context.get('intent', 'general recommendation')
+    needs_location = any(w in intent_text.lower() for w in ['where', 'location', 'located', 'address', 'area'])
 
     prompt = f"""You are a Nigerian recommendation agent. Pick the best places for this user.
 
@@ -116,26 +119,31 @@ USER PROFILE:
 
 {state['cultural_framing']}
 
-INTENT: {context.get('intent', 'general recommendation')}
+INTENT: {intent_text}
 
-CANDIDATES:
+{"LOCATION REQUEST DETECTED: The user explicitly asked WHERE the place is. You MUST include the specific address and area in each recommendation's reason." if needs_location else ""}
+
+CANDIDATES (format: # name | categories | address | city | stars | id):
 {candidates_text}
 
-Select the top {k} that best match this user. Explain each recommendation
-in a way that resonates with a Nigerian user — reference their specific taste,
-cultural context, and what makes this place right for them.
+Select the top {k} that best match this user. Explain each pick in a way 
+that resonates with a Nigerian user — reference their taste, cultural context, 
+and what makes the place right for them.
+
+IMPORTANT: Always include the location (address or area) of each place in the 
+'reason' field, so the user knows where to find it physically.
 
 Respond ONLY in this JSON format:
 {{
     "recommendations": [
         {{
-            "business_id": "<from candidates>",
+            "business_id": "<exact id from candidates>",
             "name": "<name>",
             "categories": "<categories>",
             "city": "<city>",
             "stars": <float>,
             "score": <float 0-1>,
-            "reason": "<specific Nigerian-toned explanation>"
+            "reason": "<Nigerian-toned explanation INCLUDING the address/area>"
         }}
     ],
     "clarifying_questions": ["<only if cold start and more info would help>"]
