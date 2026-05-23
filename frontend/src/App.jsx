@@ -55,8 +55,8 @@ function App() {
       const data = await response.json();
       setResultB(data); 
     } catch (error) {
-      console.error("Gateway error:", error);
-      alert("Error: API server is offline.");
+      console.error("API error:", error);
+      alert("Error: " + error.message);
     } finally {
       setLoadingB(false);
     }
@@ -178,7 +178,7 @@ function App() {
 
               <div className="lg:col-span-8 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                 <h2 className="text-xl font-semibold mb-4 text-gray-800">Ranked Output (NDCG Optimized)</h2>
-                {resultB ? (
+                {resultB && resultB.recommendations ? (
                   <div className="space-y-4">
                     {resultB.recommendations.map((item, i) => (
                       <div key={item.item} className="p-5 border border-gray-100 rounded-lg bg-gray-50 flex gap-4">
